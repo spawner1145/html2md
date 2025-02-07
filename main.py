@@ -58,7 +58,7 @@ async def html_read(url):
                     if tag_name in ['script', 'style']:
                         return result
                     
-                    if tag_name == 'code' or tag_name == 'pre':
+                    if tag_name == 'code':
                         all_lines = []
                         # 检查是否有直接的`<span>`子元素
                         spans = node.find_all('span', recursive=False)
@@ -66,14 +66,20 @@ async def html_read(url):
                             for span in spans:
                                 # 获取每个span的所有子孙节点的文本，并保持其中的空白字符
                                 line_parts = [part.get_text() if hasattr(part, "get_text") else str(part) for part in span.contents]
-                                full_line = ''.join(line_parts).strip()
-                                if full_line:  # 只添加非空白行
+                                full_line = ''.join(line_parts)
+
+                                # 如果行中只包含空白字符，也添加到all_lines中
+                                stripped_line = full_line.strip()
+                                if stripped_line or (full_line and not full_line.isspace()):
                                     all_lines.append(full_line)
                         else:
                             # 如果没有`<span>`子元素，则直接使用`<code>`标签内的文本，并保持其中的空白字符
-                            code_text = node.get_text().strip()
-                            if code_text:
-                                all_lines.append(code_text)
+                            code_text = node.get_text()
+                            lines = code_text.split('\n')
+                            for line in lines:
+                                stripped_line = line.strip()
+                                if stripped_line or (line and not line.isspace()):
+                                    all_lines.append(line)
 
                         formatted_code = "\n".join([f"{indent}{line}" for line in all_lines])
                         result.append(f"{indent}```yaml\n{formatted_code}\n{indent}```")
