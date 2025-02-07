@@ -58,7 +58,7 @@ async def html_read(url):
                     if tag_name in ['script', 'style']:
                         return result
                     
-                    if tag_name == 'code':
+                    if tag_name == 'pre' or tag_name == 'code':
                         all_lines = []
                         # 检查是否有直接的`<span>`子元素
                         spans = node.find_all('span', recursive=False)
