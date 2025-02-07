@@ -60,24 +60,23 @@ async def html_read(url):
                     
                     if tag_name == 'code' or tag_name == 'pre':
                         all_lines = []
-                        
+                        # 检查是否有直接的`<span>`子元素
                         spans = node.find_all('span', recursive=False)
                         if spans:
                             for span in spans:
+                                # 获取每个span的所有子孙节点的文本，并保持其中的空白字符
                                 line_parts = [part.get_text() if hasattr(part, "get_text") else str(part) for part in span.contents]
                                 full_line = ''.join(line_parts).strip()
-                                if full_line:
+                                if full_line:  # 只添加非空白行
                                     all_lines.append(full_line)
                         else:
-                            code_text = node.get_text('\n').strip()
-                            lines = code_text.split('\n')
-                            for line in lines:
-                                stripped_line = line.rstrip()
-                                if stripped_line:
-                                    all_lines.append(stripped_line)
+                            # 如果没有`<span>`子元素，则直接使用`<code>`标签内的文本，并保持其中的空白字符
+                            code_text = node.get_text().strip()
+                            if code_text:
+                                all_lines.append(code_text)
 
                         formatted_code = "\n".join([f"{indent}{line}" for line in all_lines])
-                        result.append(f"{indent}yaml```\n{formatted_code}\n{indent}```")
+                        result.append(f"{indent}```yaml\n{formatted_code}\n{indent}```")
                         return result
                     
                     if tag_name in url_attributes:
